@@ -15,9 +15,10 @@ class DFS:
         self.visited.add(node)
         self.pre[node] = self.clock
         self.clock += 1
-        for neighbor in self.edges[node]:
-            if neighbor not in self.visited:
-                self.explore(neighbor)
+        if node in self.edges:
+            for neighbor in self.edges[node]:
+                if neighbor not in self.visited:
+                    self.explore(neighbor)
         self.post[node] = self.clock
         self.clock+=1
 
@@ -43,8 +44,7 @@ class DFS:
                 self.explore_scc(neighbor, component)
     
     def SCC(self):
-
-        self.reverse(self.edges)
+        self.reverse(edges)
         desending_post = dict(sorted(self.post.items(), key=lambda item: item[1], reverse=True)).keys()
         component = 0
         for node in desending_post:
@@ -52,7 +52,17 @@ class DFS:
                 component+=1
                 self.explored.add(node)
                 self.explore_scc(node,component)
-        return self.scc
+        return self.pre,self.post,self.scc
+def reverse(edges):
+    reversed_edges = {}
+    for k,v in edges.items():
+        for l in v:
+            if l not in reversed_edges:
+                reversed_edges[l]=[]
+            if k not in reversed_edges[l]:
+                reversed_edges[l].append(k)
+    return reversed_edges
+
 if __name__ =='__main__':
     nodes = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N']
 
@@ -81,8 +91,10 @@ if __name__ =='__main__':
     st.write(f"Edges: {output_dic}")
     st.code(output_dic,language='python')
     
-    generate_scc = st.button('calculate SCC')
-    if generate_scc:
+
+
+    generate_order = st.button('ordering')
+    if generate_order:
         nodes = []
         for l in output_dic.values():
             nodes.extend(l)
@@ -91,6 +103,20 @@ if __name__ =='__main__':
         gh = DFS(nodes,output_dic)
         pre,post = gh.run_DFS()
         st.write(f'Pre order numbers are {pre} and post are {post}')
-        st.write(f' SCC group is {gh.SCC()}')
+
+    generate_scc = st.button('calculate SCC')
+    if generate_scc:
+        nodes = []
+        for l in output_dic.values():
+            nodes.extend(l)
+        nodes = sorted(set(nodes + list(output_dic.keys())))
+        st.write(f' nodes are {nodes}')
+        edges = reverse(output_dic)
+        st.write(f'reversed edges are {edges}')
+        gh2 = DFS(nodes,edges)
+        gh2.run_DFS()
+        pre,post,out = gh2.SCC()
+        st.write(f'Pre order numbers are {pre} and post are {post}')
+        st.write(f' SCC group is {out}')
 
 
